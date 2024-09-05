@@ -76,3 +76,20 @@ jobs:
       - name: Delete Secret from DigitalOcean Cluster
         run: |
           kubectl delete secret ${{ env.CLUSTER_NAME }}-secret -n $GITHUB_REPOSITORY_OWNER || true
+
+      - name: Write Catalogo Info
+        run: |
+          yq e '''
+                del(.metadata.annotations."veecode/cluster-name") |
+                del(.metadata.annotations."kubernetes.io/*")
+               ''' .platform/component.yaml
+
+      - name: Publish catalog info
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          repository: ".platform/"
+          commit_user_name: veecode-bot
+          commit_user_email: github-admin@vee.codes
+          commit_author: veecode-bot<github-admin@vee.codes>
+          commit_message: "Update catalog-info.yaml with cluster info"
+          push_options: '--force'
